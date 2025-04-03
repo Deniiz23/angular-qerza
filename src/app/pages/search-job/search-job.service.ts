@@ -15,10 +15,6 @@ export class SearchJobService {
     return this.http.get<Job[]>(`${API_URL}`);
   }
 
-  getJobById(id: number): Observable<Job> {
-    return this.http.get<Job>(`${API_URL}/${id}`);
-  }
-
   createJob(job: Job): Observable<Job> {
     return this.http.post<Job>(`${API_URL}`, job);
   }
