@@ -14,4 +14,20 @@ export class SearchJobService {
   getAllJobs(): Observable<Job[]> {
     return this.http.get<Job[]>(`${API_URL}`);
   }
+
+  getJobById(id: number): Observable<Job> {
+    return this.http.get<Job>(`${API_URL}/${id}`);
+  }
+
+  createJob(job: Job): Observable<Job> {
+    return this.http.post<Job>(`${API_URL}`, job);
+  }
+
+  updateJob(id: number, job: Job): Observable<Job> {
+    return this.http.put<Job>(`${API_URL}/${id}`, job);
+  }
+
+  deleteJob(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/${id}`);
+  }
 }
