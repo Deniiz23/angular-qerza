@@ -135,7 +135,20 @@ export class SearchJobComponent implements OnInit, OnDestroy {
     ).subscribe();
   }
 
+  private isJobValid(): boolean {
+    return !!(
+      this.selectedJob.title?.trim() &&
+      this.selectedJob.company?.trim() &&
+      this.selectedJob.location?.trim()
+    );
+  }
+
   saveJob(): void {
+    if (!this.isJobValid()) {
+      alert('Bitte füllen Sie mindestens Titel, Firma und Standort aus.');
+      return;
+    }
+    
     if (this.selectedJob.id) {
       this.updateJob(this.selectedJob.id, this.selectedJob);
     } else {
