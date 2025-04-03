@@ -90,38 +90,47 @@
         <button class="btn btn-primary" (click)="openJobModal(jobModal)">Add New Job</button>
       </div>
     </div>
-    <div class="row">
-      <div class="col-xl-12">
-        @for(item of myJobs; track item;){
-        <div
-          class="d-flex flex-wrap search-row bg-card py-3 mb-3 px-3 rounded justify-content-between align-items-center">
-          <div class="d-flex col-xl-4 col-xxl-3 col-lg-4 col-sm-6 align-items-center">
-            <img src="{{item.companylogo}}" class="me-3 featured-logo" />
-            <div>
-              <h2 class="title"><a routerLink="/{{item.url}}" class="text-black">{{item.title}}</a></h2>
-              <span class="text-primary">{{item.company}}</span>
+    <div class="jobs-list">
+      <div *ngIf="myJobs.length === 0" class="text-center p-4">
+        {{ noJobsMessage }}
+      </div>
+      <div *ngIf="myJobs.length > 0">
+        <div class="row">
+          <div class="col-xl-12">
+            @for(item of myJobs; track item;){
+            <div
+              class="d-flex flex-wrap search-row bg-card py-3 mb-3 px-3 rounded justify-content-between align-items-center">
+              <div class="d-flex col-xl-4 col-xxl-3 col-lg-4 col-sm-6 align-items-center">
+                <img src="{{item.companylogo}}" class="me-3 featured-logo" />
+                <div>
+                  <h2 class="title"><a routerLink="/{{item.url}}" class="text-black">{{item.title}}</a></h2>
+                  <span class="text-primary">{{item.company}}</span>
+                </div>
+              </div>
+              <div class="d-flex col-xl-3 col-lg-4 col-sm-6 align-items-center">
+                <img src="assets/images/svg/icsalary.svg" class="me-3 ms-lg-0 ms-sm-auto ms-0 mt-sm-0 mt-3 rounded-2" />
+                <div>
+                  <h4 class="sub-title text-black">{{item.salary}}</h4>
+                  <span>Monthly Salary</span>
+                </div>
+              </div>
+              <div class="d-flex col-xl-3 col-lg-4 col-sm-6 mt-lg-0 mt-3 align-items-center">
+                <img src="assets/images/svg/iclocation.svg"
+                  class="me-3 ms-lg-0 ms-sm-auto ms-0 mt-sm-0 mt-3 rounded-2" />
+                <div>
+                  <h4 class="sub-title text-black">{{item.location}}</h4>
+                  <span>Location</span>
+                </div>
+              </div>
+              <div class="col-xl-2 col-xxl-3 text-xl-end text-lg-start text-sm-end col-lg-12 col-sm-6 mt-xl-0 mt-3">
+                <button class="btn btn-sm btn-outline-primary rounded me-2"
+                  (click)="openJobModal(jobModal, item)">Edit</button>
+                <button class="btn btn-sm btn-outline-primary rounded me-2" (click)="deleteJob(item.id)">Delete</button>
+              </div>
             </div>
-          </div>
-          <div class="d-flex col-xl-3 col-lg-4 col-sm-6 align-items-center">
-            <img src="assets/images/svg/icsalary.svg" class="me-3 ms-lg-0 ms-sm-auto ms-0 mt-sm-0 mt-3 rounded-2" />
-            <div>
-              <h4 class="sub-title text-black">{{item.salary}}</h4>
-              <span>Monthly Salary</span>
-            </div>
-          </div>
-          <div class="d-flex col-xl-3 col-lg-4 col-sm-6 mt-lg-0 mt-3 align-items-center">
-            <img src="assets/images/svg/iclocation.svg" class="me-3 ms-lg-0 ms-sm-auto ms-0 mt-sm-0 mt-3 rounded-2" />
-            <div>
-              <h4 class="sub-title text-black">{{item.location}}</h4>
-              <span>Location</span>
-            </div>
-          </div>
-          <div class="col-xl-2 col-xxl-3 text-xl-end text-lg-start text-sm-end col-lg-12 col-sm-6 mt-xl-0 mt-3">
-            <button class="btn btn-sm btn-outline-primary rounded me-2" (click)="openJobModal(jobModal, item)">Edit</button>
-            <button class="btn btn-sm btn-outline-primary rounded me-2" (click)="deleteJob(item.id)">Delete</button>
+            }
           </div>
         </div>
-        }
       </div>
     </div>
   </div>
@@ -144,25 +153,29 @@
       <div class="col-xl-6">
         <div class="mb-3">
           <label for="company" class="form-label">Company</label>
-          <input type="text" class="form-control" id="company" [(ngModel)]="selectedJob.company" placeholder="Company Name">
+          <input type="text" class="form-control" id="company" [(ngModel)]="selectedJob.company"
+            placeholder="Company Name">
         </div>
       </div>
       <div class="col-xl-6">
         <div class="mb-3">
           <label for="salary" class="form-label">Salary</label>
-          <input type="text" class="form-control" id="salary" [(ngModel)]="selectedJob.salary" placeholder="Monthly Salary">
+          <input type="text" class="form-control" id="salary" [(ngModel)]="selectedJob.salary"
+            placeholder="Monthly Salary">
         </div>
       </div>
       <div class="col-xl-6">
         <div class="mb-3">
           <label for="location" class="form-label">Location</label>
-          <input type="text" class="form-control" id="location" [(ngModel)]="selectedJob.location" placeholder="Location">
+          <input type="text" class="form-control" id="location" [(ngModel)]="selectedJob.location"
+            placeholder="Location">
         </div>
       </div>
       <div class="col-xl-6">
         <div class="mb-3">
           <label for="companylogo" class="form-label">Company Logo URL</label>
-          <input type="text" class="form-control" id="companylogo" [(ngModel)]="selectedJob.companylogo" placeholder="Company Logo URL">
+          <input type="text" class="form-control" id="companylogo" [(ngModel)]="selectedJob.companylogo"
+            placeholder="Company Logo URL">
         </div>
       </div>
       <div class="col-xl-6">
@@ -175,22 +188,17 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-danger light" (click)="modal.dismiss('Cross click')">Close</button>
-    <button type="button" class="btn btn-primary" (click)="saveJob()">{{ selectedJob.id ? 'Update Job' : 'Save Job' }}</button>
+    <button type="button" class="btn btn-primary" (click)="saveJob()">{{ selectedJob.id ? 'Update Job' : 'Save Job'
+      }}</button>
   </div>
 </ng-template>
 
-<ngb-toast
-    *ngIf="showSuccess"
-    [autohide]="true"
-    [delay]="3000"
-    class="position-fixed z-3 top-0 end-0 mt-5 me-3 bg-primary text-white rounded-3">
+<ngb-toast *ngIf="showSuccess" [autohide]="true" [delay]="3000"
+  class="position-fixed z-3 top-0 end-0 mt-5 me-3 bg-primary text-white rounded-3">
   Job wurde erfolgreich erstellt!
 </ngb-toast>
 
-<ngb-toast
-    *ngIf="showUpdateSuccess"
-    [autohide]="true"
-    [delay]="3000"
-    class="position-fixed z-3 top-0 end-0 mt-5 me-3 bg-primary text-white rounded-3">
+<ngb-toast *ngIf="showUpdateSuccess" [autohide]="true" [delay]="3000"
+  class="position-fixed z-3 top-0 end-0 mt-5 me-3 bg-primary text-white rounded-3">
   Job wurde erfolgreich aktualisiert!
 </ngb-toast>

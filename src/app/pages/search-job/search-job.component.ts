@@ -43,6 +43,7 @@ export class SearchJobComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
   showSuccess = false;
   showUpdateSuccess = false;
+  noJobsMessage = 'Keine Einträge vorhanden';
 
   constructor(
     private searchJobService: SearchJobService,
