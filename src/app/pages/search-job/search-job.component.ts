@@ -1,29 +1,26 @@
 import { Component, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DropdownComponent } from '../../elements/dropdown/dropdown.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Job, SearchJobService } from './search-job.service';
-import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
+import { NgbModal, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
+import { SearchJobService } from './search-job.service';
+import { Job } from '../interfaces/job.interface';
+import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { catchError, finalize, of, Subject, tap } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { JsonPipe } from '@angular/common';
+import { JsonPipe, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-interface type {
-  title: string,
-  company: string,
-  companylogo: string,
-  salary: string,
-  location: string,
-  url: string,
-}
 @Component({
   selector: 'app-search-job',
   standalone: true,
   imports: [
+    CommonModule,
     RouterLink,
     DropdownComponent,
     HttpClientModule,
-    JsonPipe
+    JsonPipe,
+    FormsModule,
+    NgbToastModule
   ],
   providers: [
     SearchJobService
@@ -33,7 +30,19 @@ interface type {
 })
 export class SearchJobComponent implements OnInit, OnDestroy {
 
-  private unsubscribe$ = new Subject<void>(); // For takeUntil
+  myJobs: Job[] = [] as Job[];
+  selectedJob: Job = {
+    id: 0,
+    title: '',
+    company: '',
+    salary: '',
+    location: '',
+    companylogo: '',
+    url: ''
+  };
+  private unsubscribe$ = new Subject<void>();
+  showSuccess = false;
+  showUpdateSuccess = false;
 
   constructor(
     private searchJobService: SearchJobService,
@@ -46,37 +55,41 @@ export class SearchJobComponent implements OnInit, OnDestroy {
     this.searchJobService.getAllJobs().pipe(
       takeUntil(this.unsubscribe$),
       catchError((error: HttpErrorResponse) => {
-        console.error('Job fetch error:', error);
-        return of(null);
+        console.error('Failed to load jobs:', error.message);
+        return of([]);
       }),
       finalize(() => {
-        // this.isLoading = false;
+        console.debug('Job loading completed');
       }),
-      tap((jobs: any) => {
-        // if (jobs) {
-          // this.jobs = jobs;
-        // }
-        this.myJobs = jobs;
+      tap((jobs: Job[]) => {
+        this.myJobs = jobs || [];
       })
     ).subscribe({
-      next(jobs: any) {
-        console.log('Current jobs: ', jobs);
+      next: (jobs: Job[]) => {
+        console.debug(`Successfully loaded ${jobs.length} jobs`);
       },
-      error(msg) {
-        console.log('Error Getting jobs: ', msg);
+      error: (error: Error) => {
+        console.error('Job subscription error:', error);
       }
     });
   }
-
-  myJobs: Job[] = [] as Job[];
 
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
 
-  openCenter(content: TemplateRef<any>) {
-    this.modalService.open(content, { centered: true });
+  openJobModal(content: TemplateRef<any>, job?: Job) {
+    this.selectedJob = job ? { ...job } : {
+      id: 0,
+      title: '',
+      company: '',
+      salary: '',
+      location: '',
+      companylogo: '',
+      url: ''
+    };
+    this.modalService.open(content, { centered: true, size: 'lg' });
   }
 
   dropdown_item = {
@@ -85,46 +98,64 @@ export class SearchJobComponent implements OnInit, OnDestroy {
     image: ['assets/images/svg/arrow-down-short.svg']
   }
 
-  jobs: type[] = [
-    {
-      title: "Senior UX Designer",
-      company: "Highspeed Studios",
-      companylogo: "assets/images/companylogo/1.svg",
-      salary: "$14,000 - $25,000",
-      location: "London, England",
-      url: "admin/profile",
-    },
-    {
-      title: "Intern UX Designer",
-      company: "Maximoz Team",
-      companylogo: "assets/images/companylogo/2.svg",
-      salary: "$500 - $1,000",
-      location: "Manchester, England",
-      url: "admin/profile",
-    },
-    {
-      title: "Junior UX Designer",
-      company: "Vvibu Leu Boz Studios",
-      companylogo: "assets/images/companylogo/3.svg",
-      salary: "$8,000 - $12,000",
-      location: "Oxford, England",
-      url: "admin/profile",
-    },
-    {
-      title: "Principal UX Designer",
-      company: "Lowvoltages Team",
-      companylogo: "assets/images/companylogo/4.svg",
-      salary: "$11,000 - $60,000",
-      location: "London, England",
-      url: "admin/profile",
-    },
-    {
-      title: "Senior UX Designer",
-      company: "Highspeed Studios",
-      companylogo: "assets/images/companylogo/5.svg",
-      salary: "$500 - $1,000",
-      location: "London, England",
-      url: "admin/profile",
-    },
-  ]
+  createJob(job: Job): void {
+    this.searchJobService.createJob(job).pipe(
+      takeUntil(this.unsubscribe$),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Job creation error:', error);
+        return of(null);
+      }),
+      tap((createdJob: Job | null) => {
+        if (createdJob) {
+          this.myJobs.unshift(createdJob);
+          this.showSuccess = true;
+          setTimeout(() => this.showSuccess = false, 3000); // Toast verschwindet nach 3 Sekunden
+        }
+      })
+    ).subscribe();
+  }
+
+  updateJob(id: number, job: Job): void {
+    this.searchJobService.updateJob(id, job).pipe(
+      takeUntil(this.unsubscribe$),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Job update error:', error);
+        return of(null);
+      }),
+      tap((updatedJob: Job | null) => {
+        if (updatedJob) {
+          const index = this.myJobs.findIndex(j => j.id === id);
+          if (index !== -1) {
+            this.myJobs[index] = updatedJob;
+            this.showUpdateSuccess = true;
+            setTimeout(() => this.showUpdateSuccess = false, 3000);
+          }
+        }
+      })
+    ).subscribe();
+  }
+
+  saveJob(): void {
+    if (this.selectedJob.id) {
+      this.updateJob(this.selectedJob.id, this.selectedJob);
+    } else {
+      this.createJob(this.selectedJob);
+    }
+    this.modalService.dismissAll();
+  }
+
+  deleteJob(id: number): void {
+    if (confirm('Sind Sie sicher, dass Sie diesen Job löschen möchten?')) {
+      this.searchJobService.deleteJob(id).pipe(
+        takeUntil(this.unsubscribe$),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Job delete error:', error);
+          return of(null);
+        }),
+        tap(() => {
+          this.myJobs = this.myJobs.filter(job => job.id !== id);
+        })
+      ).subscribe();
+    }
+  }
 }
